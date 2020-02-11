@@ -1,0 +1,380 @@
+% switch to set in AMS monograph format or not
+\newif\ifams
+\amstrue
+
+\ifams
+	\documentclass{amsart}
+\else
+	\documentclass[letterpaper,11pt]{article}
+\fi
+
+\usepackage{latexsym}
+%\usepackage{html}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{hyperref}
+
+\author[D. A. Drummond]{D. Allan Drummond}
+\title[The Sum over Histories]{An Introduction to Feynman's Sum over Histories}
+%\date{\today}%
+\frenchspacing
+\pagestyle{headings}
+
+% make document portable to LaTeX and PDFLaTeX, with or without hyperref
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+	\pdffalse % we are not running PDFLaTeX
+\else
+	\pdfoutput=1 % we are running PDFLaTeX
+	\pdftrue
+\fi
+
+\ifpdf
+	\usepackage[pdftex]{graphicx}
+	\pdfcompresslevel=9
+\else
+	\usepackage{graphicx}
+\fi
+
+
+% math formatting
+% vector formatting
+\newcommand{\mv}[1]{\mathbf{#1}}	% matrix or vector
+\newcommand{\meye}{\mv{I}}			% identity matrix
+\newcommand{\mzero}{\mv{0}}			% zero matrix
+% derivatives and differentials
+\newcommand{\md}{d}		% differential, for things like \int x dx
+\newcommand{\mderiv}[1]{\frac{\md}{\md {#1}}} %d/dx
+\newcommand{\mnthderiv}[2]{\frac{\md^{#2}}{\md {#1}^{#2}}} %d^n/dx
+\newcommand{\mpderiv}[1]{\frac{\partial}{\partial {#1}}} %partial d^n/dx
+\newcommand{\mnthpderiv}[2]{\frac{\partial^{#2}}{\partial {#1}^{#2}}} %partial d^n/dx
+\newcommand{\integers}{\mathbb{Z}}
+\newcommand{\rationals}{\mathbb{Q}}
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\complexes}{\mathbb{C}}
+\newcommand{\set}[1]{\left\{#1\right\}}
+
+%macros for this doc
+\newcommand{\bra}[1]{\langle#1 \vert}
+\newcommand{\ket}[1]{\vert \hspace{1pt}#1\rangle}
+\newcommand{\braket}[2]{\langle #1 \ket{#2}}
+\newcommand{\qv}{q}
+\newcommand{\action}[3]{S[#1,\dot{#1};#2,#3]}
+
+\begin{document}
+
+\begin{abstract}
+We briefly review quantum mechanics, describe the sum over histories and formalize it in terms of a path integral, carry out the path integral for a free particle, and describe how the counterintuitive sum over histories results in the macroscopic behavior we observe.  The discussion, while informal, assumes some familiarity with basic quantum concepts (e.g. amplitudes, Schr\"odinger's equation), calculus and Dirac's bra-ket notation.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+Quantum mechanics begins with a few simple principles:
+\begin{enumerate}
+\item{Physical events have predictable probabilities, at least in principle.  Making these predictions is what physics is for.}
+\item{Associated with each event is a complex amplitude, and the event's probability is the product of the amplitude and its complex conjugate (or, equivalently, the absolute square of the amplitude).}
+\item{To find the amplitude for an event composed of two or more steps, multiply the amplitudes for each step.  To find the amplitude for an event which can be arrived at by alternative processes, add the amplitudes for each process.}
+\item{\emph{Correspondence Principle.} The physical description of events used on the quantum scale must extend to the macroscopic world in the limit of large energies with respect to $h$, the quantum of action.}
+\end{enumerate}
+
+Note that the third principle corresponds directly to the rules of probability: to find the probability of two events happening together (rolling snake-eyes twice in a row), multiply probabilities, and to find the probability of an event which can happen more than one way (you can roll seven in six different ways), add the probabilities.  In 1947, Richard Feynman, building on the work of his hero, \href{http://www-groups.dcs.st-andrews.ac.uk/~history/Mathematicians/Dirac.html}{Paul Dirac}, discovered a wonderful fifth principle: The correct amplitude for an event can be found by adding the amplitudes for every way the event can happen, every history the event could have.  The tantalizing suggestion is that the computation works because, in fact, nature really \emph{does} follow every available path as long as ``no one is looking.''  Despite its seeming outrageousness, the theory has been outrageously successful.  Feynman's idea, and the famous diagrams birthed from it, created a revolution in physics, bringing ``quantum field theory to the masses'' (ref. Schwinger), allowing the rapid completion of computations that had previously taken months or years, and becoming the \emph{lingua franca} of quantum field theory.  The path integral is now an indispensable tool in fundamental physics and has even made its way into advanced finance.  Let's see how it works.
+
+\section{The Quantum Path Integral}
+
+Consider a photon emitted at $(\qv_0,t_0)$ toward a detector at $(\qv,t)$, where $\qv_0,\qv \in \reals^D$ represent points in a $D$-dimensional Euclidean space.  If we think of measurements as constraints, fixing a photon's position at certain times, then quantum mechanics tells us that where we don't measure, the photon's path is entirely unconstrained.  That is, the photon ``takes all paths,'' and the amplitude for it to arrive at point $(\qv_0,t_0)$ from point $(\qv,t)$ can be correctly calculated by summing the amplitudes associated with every possible path the photon could take in between.  By ``possible path,'' we mean not just every straight line (such a sum would be rather dull, as it would have only one term) but quite literally every spatial path conceivable: paths that loop and twist, paths that travel to the Crab Nebula and back several times, paths that trace out your name in Helvetica Narrow across a Nebraska soybean field before heading on to the final measurement site.  We will discuss in a bit just how such a ridiculous-seeming, unphysical notion results in the pedestrian photon behavior we witness every day.  (For the purposes of this discussion, we will consider only nonrelativistic movement, in which all paths proceed monotonically forward in time.)
+
+This sum over all paths is also called the sum over histories, as we can also think of the calculation as considering every possible history of events leading from the photon's emission to the final photon measurement.  That is, the amplitude for the photon to travel from a point $(\qv_0,t_0)$ to $(\qv,t)$, is
+
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)} = \sum_{\text{all paths}} \frac{1}{A} e^{\frac{i}{\hbar}S_{\text{path}}}
+\end{equation*}
+
+Every path receives equal weight in the sum: ``[T]he microscopic point particle makes its way from [$\qv(t_0)$ to $\qv(t)$], not by a unique history, but by pursuing every conceivable history with democratically equal amplitudes" (Wheeler 1989).  The amplitude for each possible path is proportional to a complex exponential, $e^{\frac{i}{\hbar}S_{\text{path}}}$, which is a unit vector on a circle in the complex plane.  $S_{\text{path}}$ is the action for the path, the integral over the classical \htmladdnormallink{Lagrangian}{http://www.treasure-troves.com/physics/Lagrangian.html}:
+\begin{equation*}
+\action{\qv}{t_0}{t} = \int_{t_0}^{t} L(\qv,\dot{\qv}) \md \tau
+\end{equation*}
+A typical Lagrangian we will use is
+\begin{equation*}
+L(\qv,\dot{\qv}) = \frac{1}{2}m \dot{\qv}^2 - V(\qv)
+\end{equation*}
+which is easily recognizable as the kinetic energy minus the potential energy.
+
+The action is simply a number, with the units of action (joule-seconds).  (We will use square brackets to denote a functional such as $S$, which maps a function to a number in the same way a normal function maps a number to a number.)  Planck's constant $h$ ($\hbar = \frac{h}{2\pi}$) has the same units and represents a quantum of action.  We will find that the behavior we see in the macroscopic world results because the dimensionless ratio $S/\hbar$ in the amplitude is very large for macroscopic systems.  For now, just remember that as the virtual photon moves along a path, the amplitude spins on its circle like the hand on a stopwatch, and $S$ determines where the hand stops.
+
+Now, the amplitude has proportionality constant $A$ out front.  Since we're computing a probability, we want the total probability to be $1$, and $A$ is there to keep the probability from diverging.  Feynman found that for a free particle (i.e. $V(\qv)=0$),
+\begin{equation*}
+A = \left( \frac{2 \pi i \hbar (t' - t_0')}{m} \right)^{\frac{1}{2}},
+\end{equation*}
+where $t' - t_0'$ represents the time the amplitude's attendant event takes, suffices to normalize the probability.
+
+That's all there is to the path integral.  What's surprising is that the sum over histories actually produces the correct amplitude and thus predicts the correct event probabilities.
+
+\section{Computing the Sum for a Free Particle}
+
+To set a benchmark and check our answers, we will start with the famous Schr\"odinger equation, and show how the path integral approach results in the same predictions.  The Schr\"odinger equation is
+\begin{equation*}
+- \frac{\hbar^2}{2m}\mnthpderiv{\qv}{2} \braket{\qv(t)}{\qv(t_0)} + V(\qv(t), t) \braket{\qv(t)}{\qv(t_0)} = i \hbar \mpderiv{t}\braket{\qv(t)}{\qv(t_0)}
+\end{equation*}
+where $V(\qv, t)$ is the potential, and the force on a particle is 
+\begin{equation*}
+F = -\mpderiv{q}{V(\qv(t), t)}.
+\end{equation*}
+Since a free particle is defined as a particle with no forces acting on it, we have $F=0$, implying that $V(\qv(t),t) = V_0$, a constant.  We can take $V_0$ to be whatever we like, so for convenience, set $V_0 = 0$, which allows us to obtain the simplest free-particle Schr\"odinger equation:
+\begin{equation*}
+-\frac{\hbar^2}{2m}\mnthpderiv{\qv}{2}\braket{\qv(t)}{\qv(t_0)} = i \hbar \mpderiv{t}\braket{\qv(t)}{\qv(t_0)}
+\end{equation*}
+Any solution we obtain for an amplitude $\braket{\qv(t)}{\qv(t_0)}$ must satisfy this equation.  The standard form for the wave function of a free particle, the solution to the above partial differential equation, is
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)} = A e^{ i (k (\qv(t) - \qv(t_0)) - \omega (t - t_0)) }.
+\end{equation*}
+Naturally, this has been simplified to the point where physicists nod and the layperson says, ``What does $k$ mean?''  So, diving into the gallimaufry of symbols (and remembering at least that $\hbar = h / 2 \pi$):
+\begin{align*}
+k &= \frac{2 \pi}{\lambda} = \frac{p}{\hbar}\\
+\omega &= 2 \pi \nu = \frac{E}{\hbar} = \frac{p^2}{2 m \hbar}\\
+\intertext{so with}
+p &= m \frac{\qv(t) - \qv(t_0)}{t - t_0},
+\end{align*}
+we get
+\begin{align*}
+\begin{split}
+i \left( k (\qv(t) - \qv(t_0)) - \omega (t-t_0)\right) = & \ \frac{i}{\hbar} \left( m \frac{\qv(t) - \qv(t_0)}{t - t_0}(\qv(t) - \qv(t_0)) - \right. \\
+	& \qquad \left. \frac{1}{2 m} \frac{m^2 (\qv(t) - \qv(t_0))^2}{(t - t_0)^2}(t - t_0) \right)\\
+= & \ \frac{i m}{2 \hbar (t - t_0)} \left(\qv(t) - \qv(t_0) \right)^2\\
+\end{split}
+\end{align*}
+Any good quantum textbook will tell you the physical significance of $k$, $\omega$, $\nu$ and so on; they were created for very good reasons.  For our purposes here, however, we have obtained a reformulated version of the solution to the free-particle Schr\"odinger equation which contains no funny constants, and is the yardstick against which we will measure our solution by the sum over histories:
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)} = \left( \frac{m}{2 \pi i \hbar (t - t_0)}\right)^{\frac{1}{2}} \exp{\left( \frac{i m}{2 \hbar (t - t_0)} \left(\qv(t) - \qv(t_0) \right)^2 \right)}.
+\end{equation*}
+
+We will proceed as follows:
+\begin{enumerate}
+\item{Break the event whose amplitude we wish to compute into an increasing number of segments,}
+\item{take a limit such that the number of segments becomes infinite and each segment length becomes infinitesimally small,}
+\item{compute the amplitude for such an infinitesimal step along the path,}
+\item{carry out the path integral, and}
+\item{compare the answer to that produced by the Schr\"odinger equation.}
+\end{enumerate}
+
+Our goal is to determine the amplitude for a photon to move from $(\qv_0,t_0)$ to $(\qv,t)$.  This amplitude is $\braket{\qv(t)}{\qv(t_0)}$ (we will use $\qv_n$ and $\qv(t_n)$ interchangeably).  According to our path-integral hypothesis and the principles we established at the outset, this single-event amplitude can be thought of as consisting of two events: the particle travels from $(\qv_0,t_0)$ to some intermediate point $(\qv_1,t_1)$, and then proceeds from there to $(\qv,t)$.  Each of these two legs of the journey has an amplitude,  $\braket{\qv(t_1)}{\qv(t_0)}$ and $\braket{\qv(t)}{\qv(t_1)}$.  In order to sum over all possible paths, we must sum over all possible values of $\qv(t_1)$, which we do, as you might expect, by integration:
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)} = \int \braket{\qv(t)}{\qv(t_1)}\braket{\qv(t_1)}{\qv(t_0)} \md \qv_1
+\end{equation*}
+where $\qv_1 \equiv \qv(t_1)$.  This ``pseudo-path'' integral (called a functional integral, as we are integrating over all possible values of the function $\qv(t_1)$) tells us that the amplitude to go from $(\qv_0,t_0)$ to $(\qv,t)$ is equal to the sum of all path amplitudes to go from $(\qv_0,t_0)$ to $(\qv_1,t_1)$ times the sum of all path amplitudes to go from $(\qv_1,t_1)$ to $(\qv,t)$.  This is a simple application of our third principle: for events in succession we multiply amplitudes, and for alternative events we sum.
+
+Now we can differentiate paths by asking which $(\qv_1,t_1)$ they pass through.  Ultimately, to fully specify a path, we would like to be able to ask which spacetime location the path passes through at any point along its length.  Think of this as a full-scale CIA investigation of the path.  It's not enough to know you went from Austin to Minneapolis.  We want to reconstruct your tire-tracks from the moment you pulled out of a sun-beaten driveway to where you slid to a halt by a freshly shoveled curb.  So far, with our first integral, we've established the equivalent of knowing whether you stopped in Topeka (one set of paths) or Jefferson City (another set of paths), but that's it.  Let's continue.
+
+We can further break down the photon's journey by breaking the segment from $(\qv_1,t_1)$ to $(\qv,t)$ into two segments, say from $(\qv_1,t_1)$ to an arbitrary intermediate point $(\qv_2,t_2)$ and from there to $(\qv,t)$.  As before, the amplitude for the two-leg segment must be equal to the sum of all the first-leg amplitudes multiplied by the sum of all the second-leg amplitudes, resulting in
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_1)} = \int \braket{\qv(t)}{\qv(t_2)}\braket{\qv(t_2)}{\qv(t_1)} \md \qv_2.
+\end{equation*}
+Now we can combine this amplitude with the amplitude for the first segment by substituting it into the first integral, and we get
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)} = \int \int \braket{\qv(t)}{\qv(t_2)}\braket{\qv(t_2)}{\qv(t_1)}\braket{\qv(t_1)}{\qv(t_0)} \md \qv_1 \md \qv_2.
+\end{equation*}
+We can proceed breaking up the trip into smaller and smaller segments, providing more and more opportunities to differentiate specific paths.  After decomposing the trip into $n+1$ segments, our overall path integral looks like
+\begin{multline*}
+\braket{\qv(t)}{\qv(t_0)} = \idotsint \braket{\qv(t)}{\qv(t_n)} \braket{\qv(t_n)}{\qv(t_{n-1})} \cdots\\ \braket{\qv(t_2)}{\qv(t_1)}\braket{\qv(t_1)}{\qv(t_0)} \md \qv_1 \md \qv_2 \cdots \md \qv_n.
+\end{multline*}
+Now we can specify paths by listing $n$ points along their length (not counting the departure and destination points, which are the same for every path).  The only remaining step is to let $n$ go to infinity, which will allow us the infinite ``tire-track reconstruction'' precision we seek.
+\begin{multline*}
+\braket{\qv(t)}{\qv(t_0)} = \lim_{n\rightarrow\infty} \idotsint \braket{\qv(t)}{\qv(t_n)} \braket{\qv(t_n)}{\qv(t_{n-1})} \cdots\\ \braket{\qv(t_2)}{\qv(t_1)}\braket{\qv(t_1)}{\qv(t_0)} \md \qv_1 \md \qv_2 \cdots \md \qv_n.
+\end{multline*}
+Each one of these $n+1$ amplitudes now represents an infinitesimal step along the path.  Can we compute these amplitudes?  Yes.  It's time to turn to Feynman's insight: if each overall path has amplitude
+\begin{equation*}
+\frac{1}{A} \exp{\left(\frac{i}{\hbar}\action{\qv}{t_0}{t}\right)} = \frac{1}{A} \exp{\left(\frac{i}{\hbar}\int_{t_0}^{t} L(\qv,\dot{\qv}) \md \tau \right)}
+\end{equation*}
+then we can determine the amplitude for a small step along the path, over a very short time $\epsilon$, to be
+\begin{equation*}
+\frac{1}{A} \exp{\left(\frac{i}{\hbar}\int_{t_m}^{t_m + \epsilon} L(\qv,\dot{\qv}) \md \tau\right)}.
+\end{equation*}
+Using the free-particle Lagrangian $L(\qv,\dot{\qv}) = \frac{1}{2}m \dot{\qv}^2$, we get
+\begin{eqnarray*}
+\braket{\qv(t_m + \epsilon)}{\qv(t_m)} &=& \frac{1}{A} \exp{\left( \frac{i}{\hbar}\int_{t_m}^{t_m + \epsilon} \frac{1}{2} m \dot{\qv}^2 \md \tau \right)}\\
+	&=& \frac{1}{A} \exp{\left( \frac{i}{\hbar}\int_{t_m}^{t_m + \epsilon} \frac{1}{2} m \left(\frac{\qv(t_m + \epsilon) - \qv(t_m)}{\epsilon}\right)^2  \md \tau \right)}\\
+	&=& \frac{1}{A} \exp{\left( \frac{i m}{2 \hbar \epsilon} \left(\qv(t_m + \epsilon) - \qv(t_m)\right)^2 \right)}.\\
+\end{eqnarray*}
+(Note that the resulting amplitude is a gaussian of the form $ce^{at^2 - bt}$.)  The amplitude for any given path can be thought of as the product of the amplitudes for an infinite number of infinitesimal steps along that path:
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)}_{\text{path}} = \prod_{m=0}^{n} \frac{1}{A} \exp{\left( \frac{i m}{2 \hbar \epsilon} \left(\qv(t_m + \epsilon)_{\text{path}} - \qv(t_m)_{\text{path}}\right)^2 \right)}
+\end{equation*}
+Note that for these infinitesimal amplitudes, we have
+\begin{equation*}
+A = \left( \frac{2 \pi i \hbar (t' - t_0')}{m} \right)^{\frac{1}{2}} = \left( \frac{2 \pi i \hbar \epsilon}{m} \right)^{\frac{1}{2}}
+\end{equation*}
+Let's define $\epsilon$ in terms relevant to our formulation.  If $\epsilon$ is an infinitesimal time step, then we would do well to set $\epsilon = (t-t_0)/(n+1)$ so that $\epsilon\rightarrow 0$ as $n\rightarrow \infty$.  Notationally, we can then write $t_{m+1} \equiv t_m + \epsilon$ and $t = t_{n+1} \equiv t_{n} + \epsilon $.
+
+Now that we have the amplitude for each step along an arbitrary path, let's substitute it into our path integral (simplifying a little first):
+\begin{equation*}
+\begin{split}
+\braket{\qv(t)}{\qv(t_0)}
+	&= \lim_{n\rightarrow\infty} \idotsint \braket{\qv(t)}{\qv(t_n)} \braket{\qv(t_n)}{\qv(t_{n-1})} \cdots\\
+	& \braket{\qv(t_2)}{\qv(t_1)}\braket{\qv(t_1)}{\qv(t_0)} \md \qv_1 \md \qv_2 \cdots \md \qv_n\\
+	&= \lim_{n\rightarrow\infty} \idotsint \prod_{m=0}^{n} \braket{\qv(t_{m+1})}{\qv(t_m)} \prod_{k=1}^{n} \md \qv_{k}\\
+	&= \lim_{n\rightarrow\infty} \idotsint \prod_{m=0}^{n} \frac{1}{A} \exp{\left( \frac{i m}{2 \hbar \epsilon} \left(\qv(t_{m+1}) - \qv(t_m)\right)^2 \right)} \prod_{k=1}^{n} \md \qv_{k}\\
+	&= \lim_{n\rightarrow\infty} \idotsint A^{-(n+1)} \prod_{m=0}^{n} \exp{\left( \frac{i m}{2 \hbar \epsilon} \left(\qv(t_{m+1}) - \qv(t_m)\right)^2 \right)} \prod_{k=1}^{n} \md \qv_{k}.\\
+\end{split}
+\end{equation*}
+Can you see the paths in the integral?  The name ``path integral'' is somewhat misleading because we're integrating not over paths but over all possible values for each step in uncountably many paths.  Choosing values for each of the $\md \qv_m$ fixes a particular path.  Because $n\rightarrow\infty \Rightarrow \epsilon\rightarrow 0$, we are really looking at two infinite sets of integrals woven together into a mathematical fabric: the crosswise woof is the integration over all points representing the same time in each of infinitely many paths, while the lengthwise warp is the (implicit) integration over each path, from temporal beginning to end.  This was Feynman's insight---not just to construct the integral, but to look at it in a different way and ask \emph{what was really going on} inside.
+
+(A slight technical digression: what is \emph{really} going on inside the path integral is quite different than it may look.  Efforts to understand the measure of the path integral have revealed some highly unusual properties: the set of smooth [read: continuously differentiable] paths, the sort we intuitively imagine, turns out to have measure zero; the integral is dominated by paths which are differentiable nowhere!  Attempts to rigorously formulate what the measure of the integral means have generally come up short---but as a formal definition, it \emph{works}.) 
+
+Returning to our original integral, now all we must do is integrate the product of $n+1$ gaussian integrals.  It turns out we can do this exactly, because the integral of a gaussian is also a gaussian.
+
+A brief digression on integrating gaussians will help.  Remember that the definite 1-D gaussian integral
+\begin{equation*}
+\int_{-\infty}^{\infty} e^{-ax^2-bx} \md x = e^{\frac{b^2}{4a}}\left(\frac{\pi}{a}\right)^{\frac{1}{2}}
+\end{equation*}
+which can be arrived at by completing the square in the exponential (multiplying by $1$ disguised as $\exp{(b^2/4a)}\exp{(-b^2/4a)}$).  (This result may be beautifully generalized to $n$ dimensions using a quadratic form
+\begin{equation*}
+\idotsint e^{-\mv{x}^T\mv{A}\mv{x}} \md^n \mv{x}= \left(\frac{\pi^n}{\det{\mv{A}}}\right)^{\frac{1}{2}}
+\end{equation*}
+where $\mv{A}$ is a symmetric matrix and $\mv{x}=[x_1 \ x_2 \ \cdots \ x_n]^T$.  We will limit ourselves to the 1-D case for now.)
+
+Attacking the first variable of integration, $\qv_1$, and keeping in mind that $\qv_1 \equiv \qv(t_1)$, we face an integral which looks like
+\begin{equation*}
+\int \exp{\left( \frac{i m}{2 \hbar \epsilon} \left(\qv_2 - \qv_1\right)^2 \right)}\exp{\left( \frac{i m}{2 \hbar \epsilon} \left(\qv_1 - \qv_0\right)^2 \right)} \md \qv_1.
+\end{equation*}
+Combining the two exponentials and performing a little algebra, we get
+\begin{equation*}
+\int \exp{\left( \frac{i m}{2 \hbar \epsilon} \left(2\qv_1^2 - 2\qv_1(\qv_2 - \qv_0) + (\qv_2^2 + \qv_0^2)\right) \right)} \md \qv_1
+\end{equation*}
+which we can easily recognize as the form $e^{-ax^2-bx}$.  Performing the integration, we come up with
+\begin{align*}
+\int \cdots \md \qv_1 
+	& = \exp{\left( \frac{i m}{2 \hbar \epsilon}(\qv_2^2 + \qv_0^2) \right)} \exp{\left( \frac{- i m}{2 \hbar \epsilon \cdot 2} (\qv_2 + \qv_0)^2 \right)} \left( \frac{2 \pi i \hbar \epsilon}{m \cdot 2}\right)^{\frac{1}{2}}\\
+	& = \exp{\left( \frac{i m}{2 \hbar \epsilon \cdot 2} (\qv_2 - \qv_0)^2 \right)} \left( \frac{2 \pi i \hbar \epsilon}{m}\right)^{\frac{1}{2}}\left(\frac{1}{2}\right)^{\frac{1}{2}}.\\
+\end{align*}
+This is another gaussian, as we expected.  Now let's plug this result in and continue to integrate, this time over $\qv_2$:
+\begin{align*}
+&\int \exp{\left( \frac{i m}{2 \hbar \epsilon} \left(\qv_3 - \qv_2\right)^2 \right)}\exp{\left( \frac{i m}{2 \hbar \epsilon \cdot 2} (\qv_2 - \qv_0)^2 \right)} \left( \frac{2 \pi i \hbar \epsilon}{m \cdot 2}\right)^{\frac{1}{2}} \md \qv_2\\
+=& \exp{\left( \frac{i m}{2 \hbar \epsilon \cdot 3} (\qv_3 - \qv_0)^2 \right)} \left( \frac{(2 \pi i \hbar \epsilon)^2}{m^2 \cdot 3}\right)^{\frac{1}{2}}\\
+=& \exp{\left( \frac{i m}{2 \hbar \epsilon \cdot 3} (\qv_3 - \qv_0)^2 \right)} \left( \frac{2 \pi i \hbar \epsilon}{m}\right)^{\frac{2}{2}}\left(\frac{1}{3}\right)^{\frac{1}{2}}\\
+\end{align*}
+which suggests that when we continue these integrations until we've done $n$ of them, we'll get
+\begin{align*}
+\int \cdots \md \qv_1 \cdots \md \qv_n 
+	=& \exp{\left( \frac{i m}{2 \hbar \epsilon \cdot (n+1)} (\qv_{n+1} - \qv_0)^2 \right)} \left( \frac{2 \pi i \hbar \epsilon}{m}\right)^{\frac{n}{2}}\left(\frac{1}{n+1}\right)^{\frac{1}{2}}.\\
+\end{align*}
+Plugging this result back into our path integral with $\qv_0 = \qv(t_0)$ and $\qv_{n+1} = \qv(t)$, we obtain
+\begin{multline*}
+\braket{\qv(t)}{\qv(t_0)} = \\
+	\lim_{n\rightarrow\infty} A^{-(n+1)} \exp{\left( \frac{i m}{2 \hbar \epsilon (n+1)} (\qv(t) - \qv(t_0))^2 \right)} \left( \frac{2 \pi i \hbar \epsilon}{m}\right)^{\frac{n}{2}}\left(\frac{1}{n+1}\right)^{\frac{1}{2}}.\\
+\end{multline*}
+Substituting in using
+\begin{equation*}
+A = \left( \frac{2 \pi i \hbar \epsilon}{m} \right)^{\frac{1}{2}}
+\end{equation*}
+and simplifying, we get
+\begin{align*}
+\braket{\qv(t)}{\qv(t_0)}
+	&= \lim_{n\rightarrow\infty} \exp{\left( \frac{i m}{2 \hbar \epsilon (n+1)} (\qv(t) - \qv(t_0))^2 \right)} \left( \frac{m}{2 \pi i \hbar \epsilon}\right)^{\frac{1}{2}} \left(\frac{1}{n+1}\right)^{\frac{1}{2}}\\
+	&= \lim_{n\rightarrow\infty} \exp{\left( \frac{i m}{2 \hbar \epsilon (n+1)} (\qv(t) - \qv(t_0))^2 \right)} \left( \frac{m}{2 \pi i \hbar \epsilon (n+1)}\right)^{\frac{1}{2}}\\
+\intertext{But since $\epsilon = (t - t_0)/(n+1)$, this is just}
+	&= \lim_{n\rightarrow\infty} \exp{\left( \frac{i m}{2 \hbar (t-t_0)} (\qv(t) - \qv(t_0))^2 \right)} \left( \frac{m}{2 \pi i \hbar (t-t_0)}\right)^{\frac{1}{2}}\\
+	&= \exp{\left( \frac{i m}{2 \hbar (t-t_0)} (\qv(t) - \qv(t_0))^2 \right)} \left( \frac{m}{2 \pi i \hbar (t-t_0)}\right)^{\frac{1}{2}}\\
+\end{align*}
+which precisely matches the result we obtained from the free-particle Schr\"odinger equation.  Taking the sum over all paths predicts the same behavior (not just for the free particle but in fact for broad classes of potentials).  How can this be?
+
+\section{The Classical Limit}
+The Correspondence Principle introduced at the beginning of this article frames up the difficulties which we must now resolve.  In ``our world,'' the macroscopic, classical world, photons seem to move mostly in straight lines: we don't see around corners, we unconsciously follow the Mirror Rule (angle of incidence equals angle of reflection), and light seems to come unambiguously, indeed linearly, from specific sources rather than converging on us from all possible directions.  When we talk about the ``speed of light,'' we implicitly conceive of light as moving from one point to another in a straight line over a given period of time.  Yet we have just finished articulating how we can predict photon probabilities correctly by assuming the photon pursues every conceivable path, not simply the straight-line path.
+
+Is this simply a mathematical curiosity?  Or can we explain how a straight-line behavior emerges from a particle pursuing all paths in complex amplitude space?  How does the macroscopic photon behavior we observe arise from these weird quantum rules, as the Correspondence Principle demands it must?  The answer lies in the concept of the classical limit.
+
+Recall the form of each path's contribution to the integral:
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)} = \sum_{\text{all paths}} \frac{1}{A} e^{\frac{i}{\hbar}S_{\text{path}}}
+\end{equation*}
+Each path contributes with equal magnitude but varying phase.  The ratio $S_{\text{path}}/\hbar$ determines the phase.  In fact, we can write the sum over histories as
+\begin{equation*}
+\braket{\qv(t)}{\qv(t_0)} = \sum_{\text{all paths}} \frac{1}{A} \left[\cos{2 \pi \frac{S_{\text{path}}}{h}} + i \sin{2 \pi \frac{S_{\text{path}}}{h}}\right],
+\end{equation*}
+which makes the phase obvious.  As $S$ changes through a unit of size $h$, the amplitude's phase angle rotates through a full circle in the complex plane.
+
+For large $S$ with respect to $h$, this means small variations in the path will produce large variations in the phase angle.  Two slightly different neighboring paths with actions $S_1$ and $S_2$ will tend to contribute to the sum with different phases, and if their respective actions differ by only $S_1 - S_2 = h(n +\frac{1}{2}), (n=0,1,2\ldots)$, their contributions will cancel out completely:
+
+\begin{align*}
+\braket{\qv(t)}{\qv(t_0)}_{\text{path 1}} + \braket{\qv(t)}{\qv(t_0)}_{\text{path 2}}
+&=\frac{1}{A} e^{i 2 \pi (S_1/h)} + \frac{1}{A} e^{i 2 \pi (S_2/h)} \\
+&= \frac{1}{A} e^{i 2 \pi(S_1/h)} + \frac{1}{A} e^{i 2 \pi ((S_1 - h(n +\frac{1}{2}))/h)} \\
+&= \frac{1}{A} e^{i 2 \pi (S_1/h)} + \frac{1}{A}e^{i 2 \pi (S_1/h)}e^{- i 2 \pi (n +\frac{1}{2})} \\
+&= \frac{1}{A} e^{i 2 \pi (S_1/h)} + \frac{1}{A}e^{i 2 \pi (S_1/h)}e^{- i 2 \pi n}e^{-i \pi} \\
+&= \frac{1}{A} e^{i 2 \pi (S_1/h)}\left( 1 - 1 \right) \\
+&= 0.
+\end{align*}
+
+These paths act like waves with opposite phases, canceling where they meet.  If this negative interference held true for every set of paths, of course, we'd end up with a zero amplitude for the event, which clearly doesn't reflect reality.  Is there a set of paths for which neighboring path amplitudes are nearly in phase, such that they reinforced each other like a series of ripples meeting to create a rogue wave?  We can use a little functional analysis to determine if such a set of paths exists.
+
+We want to find a path with action $S$ such that altering the path slightly results in no change to the action, which we can write formally as $\delta S = 0$.
+
+How can we quantify $\delta S$?  Return to the definition of $S$:
+\begin{equation*}
+\action{\qv}{t_0}{t} = \int_{t_0}^{t} L(\qv(\tau),\dot{\qv}(\tau)) \md \tau
+\end{equation*}
+We can define
+\begin{align*}
+\delta S 
+&\equiv S[\qv(t) + \delta \qv(t),\ \dot{\qv}(t) + \delta \dot{\qv}(t);\ t_0, t] - S[\qv(t), \dot{\qv}(t);\ t_0, t] \\
+&= \int_{t_0}^{t} L(\qv(\tau) + \delta \qv(\tau),\ \dot{\qv}(\tau) + \delta \dot{\qv}(\tau)) \md \tau - S[\qv(t), \dot{\qv}(t);\ t_0, t] \\
+\end{align*}
+How are we to simplify this mess?  We are considering small perturbations to the path, which suggests a Taylor expansion of $L(\qv + \delta \qv,\dot{\qv} + \delta \dot{\qv})$ about $(\qv, \dot{\qv})$:
+\begin{equation*}
+L(\qv + \delta \qv,\dot{\qv} + \delta \dot{\qv}) = L(\qv,\dot{\qv}) + \delta \qv \mpderiv{\qv}L(\qv,\dot{\qv}) + \delta \dot{\qv} \mpderiv{\dot{\qv}}L(\qv,\dot{\qv}) + O(\delta \qv^2) + O(\delta \dot{\qv}^2)
+\end{equation*}
+and since we make little error by discarding higher-order terms in $\delta \qv$ and $\delta \dot{\qv}$, we have
+\begin{equation*}
+\int_{t_0}^{t} L(\qv + \delta \qv,\dot{\qv} + \delta \dot{\qv}) \md \tau 
+= S[\qv, \dot{\qv}; t_0, t] + \int_{t_0}^{t} \delta \qv \mpderiv{\qv}L(\qv,\dot{\qv}) + \delta \dot{\qv} \mpderiv{\dot{\qv}}L(\qv,\dot{\qv}) \md \tau
+\end{equation*}
+Keeping in mind that $\delta \dot{\qv} = \mderiv{\tau}{\delta \qv}$ and noting that
+\begin{align*}
+\mderiv{\tau}{\left(\delta \qv \mpderiv{\dot{\qv}}L(\qv,\dot{\qv})\right)} &= \delta \qv \mderiv{\tau}{\mpderiv{\dot{\qv}}L(\qv,\dot{\qv})} + \delta \dot{\qv} \mpderiv{\dot{\qv}}L(\qv,\dot{\qv}),\\
+\end{align*}
+a simple application of the product rule $(fg)' = f'g + fg'$ which allows us to substitute
+\begin{align*}
+\delta \dot{\qv} \mpderiv{\dot{\qv}}L(\qv,\dot{\qv}) &= \mderiv{\tau}{\left(\delta \qv \mpderiv{\dot{\qv}}L(\qv,\dot{\qv})\right)} - \delta \qv \mderiv{\tau}{\mpderiv{\dot{\qv}}L(\qv,\dot{\qv})},
+\end{align*}
+we can rewrite the integral, shortening $L(\qv,\dot{\qv})$ to $L$ for convenience, as:
+\begin{align*}
+\int_{t_0}^{t} \delta \qv \mpderiv{\qv} L + \delta \dot{\qv} \mpderiv{\dot{\qv}} L \md \tau
+&= \int_{t_0}^{t} \delta \qv \mpderiv{\qv} L - \delta \qv \mderiv{\tau}{\mpderiv{\dot{\qv}} L} + \mderiv{\tau}{\left(\delta \qv \mpderiv{\dot{\qv}} L \right)} \md \tau\\
+&= \int_{t_0}^{t} \delta \qv \left[ \mpderiv{\qv} L - \mderiv{\tau}{\mpderiv{\dot{\qv}} L}\right] \md \tau + \delta \qv \mpderiv{\dot{\qv}} L \Big|_{t_0}^{t}\\
+\end{align*}
+Substituting all of this progressively back into our original expression for $\delta S$, we obtain
+\begin{align*}
+\delta S 
+&= \int_{t_0}^{t} L(\qv + \delta \qv,\dot{\qv} + \delta \dot{\qv}) \md \tau - S[\qv, \dot{\qv}; t_0, t]\\
+&= S + \int_{t_0}^{t} \delta \qv \mpderiv{\qv}L + \delta \dot{\qv} \mpderiv{\dot{\qv}}L \md \tau - S\\
+&= \int_{t_0}^{t} \delta \qv \left[ \mpderiv{\qv} L - \mderiv{\tau}{\mpderiv{\dot{\qv}} L}\right] \md \tau + \delta \qv \mpderiv{\dot{\qv}} L \Big|_{t_0}^{t} = 0.
+\end{align*}
+Two conditions come to our aid.  First, we're only interested in the neighboring paths that still begin at $(\qv(t_0),t_0)$ and end at $(\qv(t),t)$, which corresponds to the condition $\delta \qv = 0$ at $t_0$ and $t$, which lets us cancel the final term.  Second, between those two points, we're interested in the paths which \emph{do} vary, for which $\delta \qv \neq 0$.  This leads us to the condition
+\begin{equation*}
+\mpderiv{\qv} L - \mderiv{\tau}{\mpderiv{\dot{\qv}} L} = 0,
+\end{equation*}
+which is called the Euler-Lagrange condition.  Substituting in the Lagrangian we introduced earlier, $L(\qv, \dot{\qv}) = \frac{1}{2} m \dot{\qv}^2 - V(\qv)$, this condition becomes
+\begin{align*}
+\mpderiv{\qv} L - \mderiv{\tau}{\mpderiv{\dot{\qv}} L} = -\mpderiv{\qv}{V(q)} - m \ddot{\qv} &= 0\\
+-\mpderiv{\qv}{V(q)} &= m \ddot{\qv},\\
+\end{align*}
+and if you think you recognize that expression, congratulations---it's Newton's second law of motion!
+
+%\begin{sidebar}
+%	Let's generalize this to the multidimensional case.
+%\end{sidebar}
+
+Let's review what all this means.  We started out trying to determine whether a path existed such that neighboring paths would have nearly the same action $S$, leading to nearly the same phase for the path amplitudes and thus an additive, rather than canceling, effect in the overall sum over histories.  We've just identified that path as the one satisfying Newton's law $F = m a$.  In other words, in the case where for most paths, slight variations in path lead to canceling amplitudes, this Newtonian path will vastly dominate the sum over histories.  Since the sum over histories produces an amplitude, and the amplitude times its complex conjugate equal the probability for the event, the Newtonian outcome will thus be by far the most probable outcome, which is precisely the behavior which led Newton to formulate his second law in the first place!
+
+All of this relies on the idea that contributions from nearby non-Newtonian paths tend to cancel.  When is this not true?  When the overall action for a path is close to $h$.  In this case, on the quantum scale, small variations in the path will lead to large variations in $S$ with respect to $h$, and thus no path will dominate.  At this scale, the behavior we see bears little relation to the Newtonian world, but may still be predicted quite accurately using Feynman's path integral to compute amplitudes.
+
+%To see this, imagine you've been given a ten-foot-long cord to connect your stereo and the wall socket, which happen to be precisely ten feet apart.  Assume the cord has outrageous tensile rigidity, such that it cannot be stretched.  Consider the cord as a path leading from the outlet ($\qv(t_0)$) to the stereo ($\qv(t)$), where the length of the cord corresponds to the path's action (not the path's length---keep this in the back of your mind).  How many different arrangements of the cord can you make without stretching it?  Essentially none, because the cord is pulled taut; it represents the shortest distance, the ``least action.''
+
+%Now you're given a twelve-foot cord, and asked to perform the same exercise.  How many arrangements can you make without changing the length (the action)?  Plenty.  The cord's loose, and you can push it around into all kinds of snaky configurations.  There is no dominant path as there was when the cord had no slack.
+
+%Consider this from another angle.  Given $h/2$ or less of slack on a ten-foot cord, how different can you make the path?  (Remember that $h/2$ is the amount of difference leading to cancellation of two paths' contributions.)  The answer is not much.  There are essentially no other paths besides the straight line, even with that extra $h/2$ of slack.  However, now consider the case of a cord $h$ long, a quantum-scale cord connecting a 110-femtovolt outlet with an Epsilon 5000 stereo.  You're given the same amount of slack, $h/2$.  How different can you make the path?  Wildly so, because you've got tons of slack, as much as if you had a 50-foot distance to cover with 75 feet of cord.  Similarly, quantum-scale path actions mean lots of path variability is possible while still maintaining additivity of contributions; the classical path specified by the Euler-Lagrange condition doesn't have a chance to dominate.  The key is that $h$ is fixed in size; it may not seem like much at our scale, but at the quantum scale and smaller, the relative size of $h$ to the phenomena we're interested in can be huge.
+
+The path integral formulation (mostly) correctly accounts for this microscopic behavior, and we've shown that as $S$ becomes much larger than $h$, the path integral reduces to Newton's second law, the classical law of motion.  Increasing $S$ from the quantum domain, $S \approx h$, to the classical domain, $S \gg h$, is known as taking the \emph{classical limit}, and the convergence of quantum behavior to classical behavior in this limit is sufficient to satisfy the Correspondence Principle.  The beauty of the mathematics has been supported by the usefulness of the result.
+
+\end{document}
